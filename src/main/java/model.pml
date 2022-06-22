@@ -27,6 +27,9 @@ physical schemas {
 				UnitsInStock,
 				UnitsOnOrder
 			}
+			references {
+				stock : ProductID -> reldata.ProductsInfo.ProductID
+			}
 		}
 	}
 	
@@ -87,7 +90,10 @@ physical schemas {
 				customer[1] {
 					CustomerID,
 					ContactName
-				}				
+				}
+			}
+			references {
+				orderHandler : EmployeeRef -> myMongoDB.Employees.EmployeeID
 			}
 		}
 		
@@ -121,8 +127,8 @@ physical schemas {
 			}
 			references {
 				productRef : ProductRef -> reldata.ProductsInfo.ProductID
+				orderRef : OrderRef -> myMongoDB.Orders.OrderID
 			}
-			
 		}
 		
 		table ProductsInfo {
@@ -137,10 +143,9 @@ physical schemas {
 				Discontinued
 			}
 			references {
-				productRef : ProductID -> Order_details.ProductRef
+				supplierRef : SupplierRef -> myMongoDB.Suppliers.SupplierID
 			}
 			
 		}
-		
 	}
 }
