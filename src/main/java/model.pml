@@ -20,11 +20,98 @@ databases {
 
 physical schemas {
 	
+	key value schema myRedis : myRedis {
+		kvpairs productStockInfo {
+			key : "PRODUCT:"[ProductID]":STOCKINFO",
+			value : hash {
+				UnitsInStock,
+				UnitsOnOrder
+			}
+		}
+	}
 	
+	document schema myMongoDB : myMongoDB {
+		collection Customers {
+			fields {
+				ID,
+				Address,
+				City,
+				CompanyName,
+				ContactName,
+				ContactTitle,
+				Country,
+				Fax,
+				Phone,
+				PostalCode,
+				Region
+			}
+		}
+		
+		collection Employees {
+			fields {
+				EmployeeID,
+				Address,
+				BirthDate,
+				City,
+				Country,
+				Extension,
+				FirstName,
+				HireDate,
+				HomePhone,
+				LastName,
+				Notes,
+				Photo,
+				PhotoPath,
+				PostalCode,
+				Region,
+				Salary,
+				Title,
+				TitleOfCourtesy
+			}
+		}
+		
+		collection Orders {
+			fields {
+				OrderID,
+				EmployeeRef,
+				Freight,
+				OrderDate,
+				RequiredDate,
+				ShipAddress,
+				ShipCity,
+				ShipCountry,
+				ShipName,
+				ShipPostalCode,
+				ShipRegion,
+				ShippedDate,
+				customer[1] {
+					CustomerID,
+					ContactName
+				}				
+			}
+		}
+		
+		collection Suppliers {
+			fields {
+				SupplierID,
+				Address,
+				City,
+				CompanyName,
+				ContactName,
+				ContactTitle,
+				Country,
+				Fax,
+				HomePage,
+				Phone,
+				PostalCode,
+				Region
+			}
+		}
+	}
 	
 	
 	relational schema reldata : reldata {
-		table Order_details {
+		table Order_Details {
 			columns {
 				OrderRef,
 				ProductRef,
@@ -33,8 +120,7 @@ physical schemas {
 				Discount
 			}
 			references {
-				productRef : ProductRef -> ProductsInfo.ProductID
-				unitPrice : UnitPrice -> ProductsInfo.UnitPrice
+				productRef : ProductRef -> reldata.ProductsInfo.ProductID
 			}
 			
 		}
@@ -52,7 +138,6 @@ physical schemas {
 			}
 			references {
 				productRef : ProductID -> Order_details.ProductRef
-				unitPrice : UnitPrice -> Order_details.UnitPrice
 			}
 			
 		}
