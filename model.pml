@@ -262,11 +262,35 @@ conceptual schema group2 {
 }
 
 mapping rules {
-	group2.Supplier(supplierID, address, city, companyName, contactName, contactTitle, country, fax, homePage, phone, postalCode, region) -> myMongoDB.Suppliers(SupplierID, Address, City, CompanyName, ContactName, ContactTitle, Country, Fax, HomePage, Phone, PostalCode, Region),
+	group2.Supplier(supplierID, address, city,
+		            companyName, contactName, contactTitle,
+		            country, fax, homePage, phone,
+		            postalCode, region)
+		 -> myMongoDB.Suppliers(SupplierID, Address, City,
+		 	                    CompanyName, ContactName,
+		 	                    ContactTitle, Country, Fax,
+		 	                    HomePage, Phone, PostalCode,
+		 	                    Region),
 	group2.supplies.productRef -> reldata.ProductsInfo.supplierRef,
-	group2.Customer(iD, address, city, companyName, contactName, contactTitle, country, fax, phone, postalCode, region) -> myMongoDB.Customers(ID, Address, City, CompanyName, ContactName, ContactTitle, Country, Fax, Phone, PostalCode, Region),
+
+	group2.Customer(iD, address, city, companyName,
+		            contactName, contactTitle, country,
+		            fax, phone, postalCode, region)
+		 -> myMongoDB.Customers(ID, Address, City, CompanyName,
+		 	                    ContactName, ContactTitle, Country,
+		 	                    Fax, Phone, PostalCode, Region),
 	group2.buys.orderRef -> myMongoDB.Orders.customer(),
-	group2.Employee(employeeID, address, birthDate, city, country, extension, firstName, hireDate, homePhone, lastName, notes, photo, photoPath, postalCode, region, salary, title, titleOfCourtesy) -> myMongoDB.Employees(EmployeeID, Address, BirthDate, City, Country, Extension, FirstName, HireDate, HomePhone, LastName, Notes, Photo, PhotoPath, PostalCode, Region, Salary, Title, TitleOfCourtesy)
+	
+	group2.Employee(employeeID, address, birthDate, city,
+		            country, extension, firstName, hireDate,
+		            homePhone, lastName, notes, photo,
+		            photoPath, postalCode, region, salary,
+		            title, titleOfCourtesy)
+		 -> myMongoDB.Employees(EmployeeID, Address, BirthDate,
+		 	                    City, Country, Extension, FirstName,
+		 	                    HireDate, HomePhone, LastName,
+		 	                    Notes, Photo, PhotoPath, PostalCode,
+		 	                    Region, Salary, Title, TitleOfCourtesy)
 	
 }
 
