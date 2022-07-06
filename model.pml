@@ -132,7 +132,6 @@ physical schemas {
 				ProductID,
 				ProductName,
 				SupplierRef,
-				CategoryRef,
 				QuantityPerUnit,
 				UnitPrice,
 				ReorderLevel,
@@ -141,7 +140,6 @@ physical schemas {
 			references {
 				supplierRef : SupplierRef -> myMongoDB.Suppliers.SupplierID
 			}
-			
 		}
 	}
 }
@@ -247,7 +245,7 @@ conceptual schema group2 {
 	
 	relationship type buys {
 		orderRef[1] : Order,
-		customerRef[0-N] : Customer	
+		customerRef[0-1] : Customer	
 	}
 	
 	relationship type handles {
@@ -271,6 +269,7 @@ mapping rules {
 		 	                    ContactTitle, Country, Fax,
 		 	                    HomePage, Phone, PostalCode,
 		 	                    Region),
+	// one-to-many - multiple databases
 	group2.supplies.productRef -> reldata.ProductsInfo.supplierRef,
 
 	group2.Customer(iD, address, city, companyName,
@@ -279,8 +278,13 @@ mapping rules {
 		 -> myMongoDB.Customers(ID, Address, City, CompanyName,
 		 	                    ContactName, ContactTitle, Country,
 		 	                    Fax, Phone, PostalCode, Region),
+	// one-to-many - nested entities
 	group2.buys.orderRef -> myMongoDB.Orders.customer(),
 	
+	// one-to-many - nested entities
+	group2.Customer(iD, contactName)
+		 -> myMongoDB.Orders.customer(CustomerID, ContactName),
+
 	group2.Employee(employeeID, address, birthDate, city,
 		            country, extension, firstName, hireDate,
 		            homePhone, lastName, notes, photo,
@@ -290,7 +294,28 @@ mapping rules {
 		 	                    City, Country, Extension, FirstName,
 		 	                    HireDate, HomePhone, LastName,
 		 	                    Notes, Photo, PhotoPath, PostalCode,
-		 	                    Region, Salary, Title, TitleOfCourtesy)
-	
-}
+		 	                    Region, Salary, Title, TitleOfCourtesy),
 
+	group2.Order(orderID, freight, orderDate, requiredDate,
+				 shipAddress, shipCity, shipCountry, shipName,
+				 shipPostalCode, shipRegion, shippedDate)
+	     -> myMongoDB.Orders(OrderID, Freight, OrderDate,
+							 RequiredDate, ShipAddress, ShipCity,
+							 ShipCountry, ShipName, ShipPostalCode,
+							 ShipRegion, ShippedDate),
+	// one-to-many - single database
+	group2.handles.orderRef -> myMongoDB.Orders.orderHandler,
+	
+	// single entity - multiple database
+	group2.Product(productID, unitsInStock, unitsOnOrder)
+	    -> myRedis.productStockInfo(ProductID, UnitsInStock, UnitsOnOrder),
+	group2.Product(productID, productName, quantityPerUnit,
+		           unitPrice, reorderLevel, discontinued) 
+		-> reldata.ProductsInfo(ProductID, ProductName, QuantityPerUnit,
+						 		UnitPrice, ReorderLevel, Discontinued),
+	// many-to-many with attributes
+	group2.composed_of.orderRef -> reldata.Order_Details.orderRef,
+	group2.composed_of.productRef -> reldata.Order_Details.productRef,
+	rel : group2.composed_of(unitPrice, quantity, discount)
+	    -> reldata.Order_Details(UnitPrice, Quantity, Discount)
+}
