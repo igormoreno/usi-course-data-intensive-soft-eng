@@ -153,7 +153,7 @@ conceptual schema group2 {
 		quantityPerUnit : string,
 		unitPrice : float,
 		reorderLevel : int,
-		discontinued: int
+		discontinued: bool
 		identifier {
 			productID
 		}
@@ -179,7 +179,7 @@ conceptual schema group2 {
 	entity type Employee {
 		employeeID : int,
 		address : string,
-		birthDate : datetime,
+		birthDate : date,
 		city : string,
 		country : string,
 		extension : string,
@@ -244,17 +244,17 @@ conceptual schema group2 {
 	}
 	
 	relationship type buys {
-		orderRef[1] : Order,
-		customerRef[0-1] : Customer	
+		boughtOrder[1] : Order,
+		customerRef[0-N] : Customer	
 	}
 	
 	relationship type handles {
-		orderRef[1] : Order,
+		order[1] : Order,
 		employeeRef[0-N] : Employee
 	}
 	
 	relationship type supplies {
-		productRef[1] : Product,
+		suppliedProduct[1] : Product,
 		supplierRef[0-N] : Supplier		
 	}
 }
@@ -270,7 +270,7 @@ mapping rules {
 		 	                    HomePage, Phone, PostalCode,
 		 	                    Region),
 	// one-to-many - multiple databases
-	group2.supplies.productRef -> reldata.ProductsInfo.supplierRef,
+	group2.supplies.suppliedProduct -> reldata.ProductsInfo.supplierRef,
 
 	group2.Customer(iD, address, city, companyName,
 		            contactName, contactTitle, country,
@@ -279,7 +279,7 @@ mapping rules {
 		 	                    ContactName, ContactTitle, Country,
 		 	                    Fax, Phone, PostalCode, Region),
 	// one-to-many - nested entities
-	group2.buys.orderRef -> myMongoDB.Orders.customer(),
+	group2.buys.boughtOrder -> myMongoDB.Orders.customer(),
 	
 	// one-to-many - nested entities
 	group2.Customer(iD, contactName)
@@ -304,7 +304,7 @@ mapping rules {
 							 ShipCountry, ShipName, ShipPostalCode,
 							 ShipRegion, ShippedDate),
 	// one-to-many - single database
-	group2.handles.orderRef -> myMongoDB.Orders.orderHandler,
+	group2.handles.order -> myMongoDB.Orders.orderHandler,
 	
 	// single entity - multiple database
 	group2.Product(productID, unitsInStock, unitsOnOrder)
