@@ -11,18 +11,10 @@ public class Polystore {
     private RedisStore redisStore;
     private MongoDBStore mongoDBStore;
 
-    private Polystore(SqlStore sqlStore, RedisStore redisStore, MongoDBStore mongoDBStore) {
+    public Polystore(SqlStore sqlStore, RedisStore redisStore, MongoDBStore mongoDBStore) {
         this.sqlStore = sqlStore;
         this.redisStore = redisStore;
         this.mongoDBStore = mongoDBStore;
-    }
-
-    public static Polystore init() throws SQLException {
-       return new Polystore(
-               SqlStore.init("jdbc:mysql://hydra.unamurcs.be:33063/reldata", "root", "password"),
-               new RedisStore("hydra.unamurcs.be", 63793),
-               MongoDBStore.init("mongodb://hydra.unamurcs.be:27013")
-       );
     }
 
     /**
@@ -43,7 +35,7 @@ public class Polystore {
      *         Employee with given firstname.
      */
     public List<Customer> getCustomersByOrderEncoder(String employeeFirstName) {
-        return null;
+        return mongoDBStore.getCustomersByOrderEncoder(employeeFirstName);
     }
 
     /**
@@ -52,7 +44,9 @@ public class Polystore {
      * @param orderId Id of related Order.
      * @return All detailed Products of Order with given ID.
      */
-    public List<Product> getProductsByOrderId(int orderId) {
-        return null;
+    public List<Product> getProductsByOrderId(int orderId) throws SQLException {
+        List<Product> products = sqlStore.getProductsByOrderId(orderId);
+        redisStore.fillProducts(products);
+        return products;
     }
 }

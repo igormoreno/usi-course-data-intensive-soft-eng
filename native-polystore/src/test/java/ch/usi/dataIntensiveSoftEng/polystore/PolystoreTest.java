@@ -5,7 +5,6 @@ import ch.usi.dataIntensiveSoftEng.polystore.entities.EntityUtils;
 import ch.usi.dataIntensiveSoftEng.polystore.entities.Product;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import java.sql.SQLException;
@@ -19,7 +18,10 @@ public class PolystoreTest {
 
     @Before
     public void setUp() throws Exception {
-        polystore = Polystore.init();
+        polystore = new Polystore(
+                SqlStore.init("jdbc:mysql://hydra.unamurcs.be:33063/reldata", "root", "password"),
+                new RedisStore("hydra.unamurcs.be", 63793),
+                MongoDBStore.init("mongodb://hydra.unamurcs.be:27013"));
     }
 
     @After
@@ -35,9 +37,9 @@ public class PolystoreTest {
         List<Product> products = polystore.getProducts();
         assertNotNull(products);
         assertEquals(77, products.size());
-        System.out.println("List of products");
+        System.out.println("\nList of Products containing all information about the products (" + products.size() + ")");
         System.out.println("----------------");
-        System.out.println(EntityUtils.format(products));
+        System.out.println(EntityUtils.prettyPrintProducts(products));
         System.out.println("----------------");
     }
 
@@ -45,20 +47,28 @@ public class PolystoreTest {
      * Test that we can retrieve a List of Customers which have made an Order
      * encoded by Employee with firstname “Margaret”.
      */
-    @Ignore
     @Test
     public void getCustomersByOrderEncoder() {
         List<Customer> customers = polystore.getCustomersByOrderEncoder("Margaret");
         assertNotNull(customers);
+        System.out.println("\nList of Customers which have made an Order encoded by Employee with firstname \"Margaret\" (" + customers.size() + ")");
+        System.out.println("----------------");
+        System.out.println(EntityUtils.prettyPrintCustomer(customers));
+        System.out.println("----------------");
     }
 
     /**
      * Test that we can retrieve all detailed Products of Order with ID 10266.
      */
-    @Ignore
     @Test
-    public void getProductsByOrderId() {
+    public void getProductsByOrderId() throws SQLException {
         List<Product> products = polystore.getProductsByOrderId(10266);
         assertNotNull(products);
+        assertEquals(1, products.size());
+        assertEquals(12, products.get(0).getProductID());
+        System.out.println("\nAll detailed Products of Order with ID 10266 (" + products.size() + ")");
+        System.out.println("----------------");
+        System.out.println(EntityUtils.prettyPrintProducts(products));
+        System.out.println("----------------");
     }
 }

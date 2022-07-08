@@ -19,9 +19,26 @@ public class SqlStore {
     }
 
     public List<Product> getProducts() throws SQLException {
-        PreparedStatement ps = connection.prepareStatement("SELECT * FROM ProductsInfo");
-        ResultSet rs = ps.executeQuery();
+        return fillProducts(connection.prepareStatement("SELECT * FROM ProductsInfo").executeQuery());
+    }
 
+    public List<Product> getProductsByOrderId(int orderId) throws SQLException {
+        PreparedStatement ps = connection.prepareStatement(
+                "SELECT Order_Details.OrderRef," +
+                        "   ProductsInfo.ProductID," +
+                        "   ProductsInfo.ProductName," +
+                        "   ProductsInfo.SupplierRef," +
+                        "   ProductsInfo.QuantityPerUnit," +
+                        "   ProductsInfo.UnitPrice," +
+                        "   ProductsInfo.ReorderLevel," +
+                        "   ProductsInfo.Discontinued\n" +
+                        "  FROM ProductsInfo INNER JOIN Order_Details ON ProductsInfo.ProductID = Order_Details.ProductRef\n" +
+                        "  WHERE Order_Details.OrderRef = ?");
+        ps.setInt(1, orderId);
+        return fillProducts(ps.executeQuery());
+    }
+
+    private List<Product> fillProducts(ResultSet rs) throws SQLException {
         List<Product> res = new ArrayList<>();
         while (rs.next()) {
             Product p = new Product();
