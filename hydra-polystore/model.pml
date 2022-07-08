@@ -184,7 +184,7 @@ conceptual schema group2 {
 		country : string,
 		extension : string,
 		firstName : string,
-		hireDate : datetime,
+		hireDate : date,
 		homePhone : string,
 		lastName : string,
 		notes : string,
@@ -203,15 +203,15 @@ conceptual schema group2 {
 	entity type Order {
 		orderID : int,
 		freight : float,
-		orderDate: datetime,
-		requiredDate : datetime,
+		orderDate: date,
+		requiredDate : date,
 		shipAddress : string,
 		shipCity : string,
 		shipCountry : string,
 		shipName : string,
 		shipPostalCode : string,
 		shipRegion : string,
-		shippedDate : datetime
+		shippedDate : date
 		identifier {
 			orderID
 		}
