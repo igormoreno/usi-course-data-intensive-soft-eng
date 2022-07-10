@@ -30,7 +30,7 @@ import util.ScalaUtil;
 import org.apache.spark.api.java.function.MapFunction;
 import org.apache.spark.sql.Encoders;
 import org.apache.spark.api.java.function.FilterFunction;
-import org.apache.commons.lang.mutable.MutableBoolean;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import util.Util;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -194,7 +194,7 @@ public class HandlesServiceImpl extends dao.services.HandlesService {
 						// field  EmployeeRef for reference orderHandler . Reference field : EmployeeRef
 					nestedRow =  r1;
 					if(nestedRow != null) {
-						order1.setMyMongoDB_Orders_orderHandler_EmployeeRef(nestedRow.getAs("EmployeeRef") == null ? null : nestedRow.getAs("EmployeeRef").toString());
+						order1.setMyMongoDB_Orders_orderHandler_source_EmployeeRef(nestedRow.getAs("EmployeeRef") == null ? null : nestedRow.getAs("EmployeeRef").toString());
 						toAdd1 = true;					
 					}
 					
@@ -421,7 +421,7 @@ public class HandlesServiceImpl extends dao.services.HandlesService {
 						// field  EmployeeID for reference orderHandler . Reference field : EmployeeID
 					nestedRow =  r1;
 					if(nestedRow != null) {
-						employee1.setMyMongoDB_Orders_orderHandler_EmployeeID(nestedRow.getAs("EmployeeID") == null ? null : nestedRow.getAs("EmployeeID").toString());
+						employee1.setMyMongoDB_Orders_orderHandler_target_EmployeeID(nestedRow.getAs("EmployeeID") == null ? null : nestedRow.getAs("EmployeeID").toString());
 						toAdd1 = true;					
 					}
 					
@@ -480,7 +480,7 @@ public class HandlesServiceImpl extends dao.services.HandlesService {
 					.withColumnRenamed("title", "Employee_title")
 					.withColumnRenamed("titleOfCourtesy", "Employee_titleOfCourtesy")
 					.withColumnRenamed("logEvents", "Employee_logEvents"),
-					orderTDOorderHandlerorder.col("myMongoDB_Orders_orderHandler_EmployeeRef").equalTo(employeeTDOorderHandleremployeeRef.col("myMongoDB_Orders_orderHandler_EmployeeID")));
+					orderTDOorderHandlerorder.col("myMongoDB_Orders_orderHandler_source_EmployeeRef").equalTo(employeeTDOorderHandleremployeeRef.col("myMongoDB_Orders_orderHandler_target_EmployeeID")));
 		
 			Dataset<Handles> res_orderHandler = res_orderHandler_temp.map(
 				(MapFunction<Row, Handles>) r -> {

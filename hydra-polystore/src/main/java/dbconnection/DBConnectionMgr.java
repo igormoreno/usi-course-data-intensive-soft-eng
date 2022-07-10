@@ -31,6 +31,7 @@ import com.datastax.oss.driver.api.core.type.DataType;
 
 import util.CassandraTypeConverter;
 import util.SQLTypeConverter;
+import util.StopWatch;
 
 public class DBConnectionMgr {
 
@@ -47,10 +48,12 @@ public class DBConnectionMgr {
 	public static void update(Bson filter, Bson updateOp, String struct, String db){
 		DBCredentials credentials = DBCredentials.getDbPorts().get(db);
 		if(credentials.getDbType().equals("mongodb")){ 
+			StopWatch sw = new StopWatch();
 			MongoDatabase mongoDatabase = getMongoClient(credentials).getDatabase(db);
 	        MongoCollection<Document> structCollection = mongoDatabase.getCollection(struct);
 	        structCollection.updateMany(filter, updateOp);
 			logger.info("Update many on collection [{}], filter [{}]",db+ " - "+struct, filter);
+			logger.info("Database hit time : ", sw.getElapsedTimeInSeconds());
 		}
 		else{
 			logger.error("Can't perform update, wrong database type, need document db. Database : '{}' , type : '{}' ",credentials.getDbName(), credentials.getDbType());
@@ -63,10 +66,12 @@ public class DBConnectionMgr {
 			return;
 		DBCredentials credentials = DBCredentials.getDbPorts().get(db);
 		if(credentials.getDbType().equals("mongodb")){ 
+			StopWatch sw = new StopWatch();
 			MongoDatabase mongoDatabase = DBConnectionMgr.getMongoClient(credentials).getDatabase(db);
 	        MongoCollection<Document> structCollection = mongoDatabase.getCollection(struct);
 	        structCollection.bulkWrite(updates);
 			logger.info("Update bulk many on collection [{}]",db+ " - "+struct);
+			logger.info("Database hit time : ", sw.getElapsedTimeInSeconds());
 		}
 		else{
 			logger.error("Can't perform update, wrong database type, need document db. Database : '{}' , type : '{}' ",credentials.getDbName(), credentials.getDbType());

@@ -12,10 +12,10 @@ import java.util.ArrayList;
 import org.apache.spark.api.java.function.MapFunction;
 import org.apache.spark.sql.Encoders;
 import org.apache.spark.api.java.function.FilterFunction;
-import org.apache.commons.lang.mutable.MutableBoolean;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import conditions.Condition;
 import conditions.Operator;
-import util.Util;
+import util.*;
 import conditions.ProductAttribute;
 import pojo.Composed_of;
 import conditions.OrderAttribute;
@@ -87,13 +87,14 @@ public abstract class ProductService {
 	}
 	
 	public Dataset<Product> getProductList(conditions.Condition<conditions.ProductAttribute> condition){
+		StopWatch stopwatch = new StopWatch();
 		MutableBoolean refilterFlag = new MutableBoolean(false);
 		List<Dataset<Product>> datasets = new ArrayList<Dataset<Product>>();
 		Dataset<Product> d = null;
-		d = getProductListInProductStockInfoFromMyRedis(condition, refilterFlag);
+		d = getProductListInProductsInfoFromReldata(condition, refilterFlag);
 		if(d != null)
 			datasets.add(d);
-		d = getProductListInProductsInfoFromReldata(condition, refilterFlag);
+		d = getProductListInProductStockInfoFromMyRedis(condition, refilterFlag);
 		if(d != null)
 			datasets.add(d);
 		
@@ -107,6 +108,7 @@ public abstract class ProductService {
 		if(refilterFlag.booleanValue())
 			d = d.filter((FilterFunction<Product>) r -> condition == null || condition.evaluate(r));
 		d = d.dropDuplicates(new String[] {"productID"});
+		logger.info("Execution time in seconds : ", stopwatch.getElapsedTimeInSeconds());
 		return d;
 	}
 	
@@ -114,13 +116,13 @@ public abstract class ProductService {
 	
 	
 	
-	public abstract Dataset<Product> getProductListInProductStockInfoFromMyRedis(conditions.Condition<conditions.ProductAttribute> condition, MutableBoolean refilterFlag);
-	
-	
-	
-	
-	
 	public abstract Dataset<Product> getProductListInProductsInfoFromReldata(conditions.Condition<conditions.ProductAttribute> condition, MutableBoolean refilterFlag);
+	
+	
+	
+	
+	
+	public abstract Dataset<Product> getProductListInProductStockInfoFromMyRedis(conditions.Condition<conditions.ProductAttribute> condition, MutableBoolean refilterFlag);
 	
 	
 	public Product getProductById(Integer productID){

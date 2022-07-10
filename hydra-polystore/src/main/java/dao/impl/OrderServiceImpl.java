@@ -31,7 +31,7 @@ import util.WrappedArray;
 import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.FilterFunction;
 import java.util.ArrayList;
-import org.apache.commons.lang.mutable.MutableBoolean;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import tdo.*;
 import pojo.*;
 import util.*;
@@ -785,7 +785,7 @@ public class OrderServiceImpl extends OrderService {
 				res_composed_of_productRef_orderRef = res_composed_of_productRef_orderRef.as("A").join(all, joinCondition).select("A.*").as(Encoders.bean(Composed_ofTDO.class));
 		} 
 		Dataset<Row> res_row_productRef_orderRef = res_composed_of_productRef_orderRef.join(res_orderRef_productRef.withColumnRenamed("logEvents", "composed_of_logEvents"),
-			res_composed_of_productRef_orderRef.col("reldata_Order_Details_orderRef_OrderRef").equalTo(res_orderRef_productRef.col("reldata_Order_Details_orderRef_OrderID")));
+			res_composed_of_productRef_orderRef.col("reldata_Order_Details_orderRef_source_OrderRef").equalTo(res_orderRef_productRef.col("reldata_Order_Details_orderRef_target_OrderID")));
 		Dataset<Order> res_Order_orderRef = res_row_productRef_orderRef.as(Encoders.bean(Order.class));
 		datasetsPOJO.add(res_Order_orderRef.dropDuplicates(new String[] {"orderID"}));	
 		
@@ -890,7 +890,7 @@ public class OrderServiceImpl extends OrderService {
 				.withColumnRenamed("title", "Employee_title")
 				.withColumnRenamed("titleOfCourtesy", "Employee_titleOfCourtesy")
 				.withColumnRenamed("logEvents", "Employee_logEvents"),
-				orderTDOorderHandlerorder.col("myMongoDB_Orders_orderHandler_EmployeeRef").equalTo(employeeTDOorderHandleremployeeRef.col("myMongoDB_Orders_orderHandler_EmployeeID")));
+				orderTDOorderHandlerorder.col("myMongoDB_Orders_orderHandler_source_EmployeeRef").equalTo(employeeTDOorderHandleremployeeRef.col("myMongoDB_Orders_orderHandler_target_EmployeeID")));
 		Dataset<Order> res_Order_orderHandler = res_orderHandler.select( "orderID", "freight", "orderDate", "requiredDate", "shipAddress", "shipCity", "shipCountry", "shipName", "shipPostalCode", "shipRegion", "shippedDate", "logEvents").as(Encoders.bean(Order.class));
 		
 		res_Order_orderHandler = res_Order_orderHandler.dropDuplicates(new String[] {"orderID"});
@@ -928,10 +928,10 @@ public class OrderServiceImpl extends OrderService {
 		// Insert in standalone structures
 		// Insert in structures containing double embedded role
 		// Insert in descending structures
-		inserted = insertOrderInOrdersFromMyMongoDB(order,productRefComposed_of,customerRefBuys,employeeRefHandles)|| inserted ;
+		inserted = insertOrderInOrdersFromMyMongoDB(order,productRefComposed_of,customerRefBuys,employeeRefHandles, composed_of_unitPrice, composed_of_quantity, composed_of_discount)|| inserted ;
 		// Insert in ascending structures 
 		// Insert in ref structures 
-		inserted = insertOrderInOrder_DetailsFromReldata(order,productRefComposed_of,customerRefBuys,employeeRefHandles)|| inserted ;
+		inserted = insertOrderInOrder_DetailsFromReldata(order,productRefComposed_of,customerRefBuys,employeeRefHandles, composed_of_unitPrice, composed_of_quantity, composed_of_discount)|| inserted ;
 		// Insert in ref structures mapped to opposite role of mandatory role  
 		return inserted;
 	}

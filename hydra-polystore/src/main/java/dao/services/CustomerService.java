@@ -12,10 +12,10 @@ import java.util.ArrayList;
 import org.apache.spark.api.java.function.MapFunction;
 import org.apache.spark.sql.Encoders;
 import org.apache.spark.api.java.function.FilterFunction;
-import org.apache.commons.lang.mutable.MutableBoolean;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import conditions.Condition;
 import conditions.Operator;
-import util.Util;
+import util.*;
 import conditions.CustomerAttribute;
 import pojo.Buys;
 import conditions.OrderAttribute;
@@ -81,13 +81,14 @@ public abstract class CustomerService {
 	}
 	
 	public Dataset<Customer> getCustomerList(conditions.Condition<conditions.CustomerAttribute> condition){
+		StopWatch stopwatch = new StopWatch();
 		MutableBoolean refilterFlag = new MutableBoolean(false);
 		List<Dataset<Customer>> datasets = new ArrayList<Dataset<Customer>>();
 		Dataset<Customer> d = null;
-		d = getCustomerListInCustomersFromMyMongoDB(condition, refilterFlag);
+		d = getCustomerListInOrdersFromMyMongoDB(condition, refilterFlag);
 		if(d != null)
 			datasets.add(d);
-		d = getCustomerListInOrdersFromMyMongoDB(condition, refilterFlag);
+		d = getCustomerListInCustomersFromMyMongoDB(condition, refilterFlag);
 		if(d != null)
 			datasets.add(d);
 		
@@ -101,6 +102,7 @@ public abstract class CustomerService {
 		if(refilterFlag.booleanValue())
 			d = d.filter((FilterFunction<Customer>) r -> condition == null || condition.evaluate(r));
 		d = d.dropDuplicates(new String[] {"iD"});
+		logger.info("Execution time in seconds : ", stopwatch.getElapsedTimeInSeconds());
 		return d;
 	}
 	
@@ -108,13 +110,13 @@ public abstract class CustomerService {
 	
 	
 	
-	public abstract Dataset<Customer> getCustomerListInCustomersFromMyMongoDB(conditions.Condition<conditions.CustomerAttribute> condition, MutableBoolean refilterFlag);
-	
-	
-	
-	
-	
 	public abstract Dataset<Customer> getCustomerListInOrdersFromMyMongoDB(conditions.Condition<conditions.CustomerAttribute> condition, MutableBoolean refilterFlag);
+	
+	
+	
+	
+	
+	public abstract Dataset<Customer> getCustomerListInCustomersFromMyMongoDB(conditions.Condition<conditions.CustomerAttribute> condition, MutableBoolean refilterFlag);
 	
 	
 	public Customer getCustomerById(String iD){

@@ -30,7 +30,7 @@ import util.ScalaUtil;
 import org.apache.spark.api.java.function.MapFunction;
 import org.apache.spark.sql.Encoders;
 import org.apache.spark.api.java.function.FilterFunction;
-import org.apache.commons.lang.mutable.MutableBoolean;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import util.Util;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -103,8 +103,8 @@ public class SuppliesServiceImpl extends dao.services.SuppliesService {
 					product_res.setDiscontinued(discontinued);
 	
 					// Get reference column [SupplierRef ] for reference [supplierRef]
-					String reldata_ProductsInfo_supplierRef_SupplierRef = r.getAs("SupplierRef") == null ? null : r.getAs("SupplierRef").toString();
-					product_res.setReldata_ProductsInfo_supplierRef_SupplierRef(reldata_ProductsInfo_supplierRef_SupplierRef);
+					String reldata_ProductsInfo_supplierRef_source_SupplierRef = r.getAs("SupplierRef") == null ? null : r.getAs("SupplierRef").toString();
+					product_res.setReldata_ProductsInfo_supplierRef_source_SupplierRef(reldata_ProductsInfo_supplierRef_source_SupplierRef);
 	
 	
 					return product_res;
@@ -262,7 +262,7 @@ public class SuppliesServiceImpl extends dao.services.SuppliesService {
 						// field  SupplierID for reference supplierRef . Reference field : SupplierID
 					nestedRow =  r1;
 					if(nestedRow != null) {
-						supplier1.setReldata_ProductsInfo_supplierRef_SupplierID(nestedRow.getAs("SupplierID") == null ? null : nestedRow.getAs("SupplierID").toString());
+						supplier1.setReldata_ProductsInfo_supplierRef_target_SupplierID(nestedRow.getAs("SupplierID") == null ? null : nestedRow.getAs("SupplierID").toString());
 						toAdd1 = true;					
 					}
 					
@@ -315,7 +315,7 @@ public class SuppliesServiceImpl extends dao.services.SuppliesService {
 					.withColumnRenamed("postalCode", "Supplier_postalCode")
 					.withColumnRenamed("region", "Supplier_region")
 					.withColumnRenamed("logEvents", "Supplier_logEvents"),
-					productTDOsupplierRefsuppliedProduct.col("reldata_ProductsInfo_supplierRef_SupplierRef").equalTo(supplierTDOsupplierRefsupplierRef.col("reldata_ProductsInfo_supplierRef_SupplierID")));
+					productTDOsupplierRefsuppliedProduct.col("reldata_ProductsInfo_supplierRef_source_SupplierRef").equalTo(supplierTDOsupplierRefsupplierRef.col("reldata_ProductsInfo_supplierRef_target_SupplierID")));
 		
 			Dataset<Supplies> res_supplierRef = res_supplierRef_temp.map(
 				(MapFunction<Row, Supplies>) r -> {

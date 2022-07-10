@@ -31,7 +31,7 @@ import util.WrappedArray;
 import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.FilterFunction;
 import java.util.ArrayList;
-import org.apache.commons.lang.mutable.MutableBoolean;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import tdo.*;
 import pojo.*;
 import util.*;
@@ -843,7 +843,7 @@ public class SupplierServiceImpl extends SupplierService {
 				.withColumnRenamed("reorderLevel", "Product_reorderLevel")
 				.withColumnRenamed("discontinued", "Product_discontinued")
 				.withColumnRenamed("logEvents", "Product_logEvents"),
-				supplierTDOsupplierRefsupplierRef.col("reldata_ProductsInfo_supplierRef_SupplierID").equalTo(productTDOsupplierRefsuppliedProduct.col("reldata_ProductsInfo_supplierRef_SupplierRef")));
+				supplierTDOsupplierRefsupplierRef.col("reldata_ProductsInfo_supplierRef_target_SupplierID").equalTo(productTDOsupplierRefsuppliedProduct.col("reldata_ProductsInfo_supplierRef_source_SupplierRef")));
 		Dataset<Supplier> res_Supplier_supplierRef = res_supplierRef.select( "supplierID", "address", "city", "companyName", "contactName", "contactTitle", "country", "fax", "homePage", "phone", "postalCode", "region", "logEvents").as(Encoders.bean(Supplier.class));
 		res_Supplier_supplierRef = res_Supplier_supplierRef.dropDuplicates(new String[] {"supplierID"});
 		datasetsPOJO.add(res_Supplier_supplierRef);

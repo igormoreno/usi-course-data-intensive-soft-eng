@@ -30,7 +30,7 @@ import util.ScalaUtil;
 import org.apache.spark.api.java.function.MapFunction;
 import org.apache.spark.sql.Encoders;
 import org.apache.spark.api.java.function.FilterFunction;
-import org.apache.commons.lang.mutable.MutableBoolean;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import util.Util;
 import org.apache.commons.lang3.tuple.ImmutablePair;
 import org.apache.commons.lang3.tuple.Pair;
@@ -194,7 +194,7 @@ public class Composed_ofServiceImpl extends dao.services.Composed_ofService {
 						// field  OrderID for reference orderRef . Reference field : OrderID
 					nestedRow =  r1;
 					if(nestedRow != null) {
-						order1.setReldata_Order_Details_orderRef_OrderID(nestedRow.getAs("OrderID") == null ? null : nestedRow.getAs("OrderID").toString());
+						order1.setReldata_Order_Details_orderRef_target_OrderID(nestedRow.getAs("OrderID") == null ? null : nestedRow.getAs("OrderID").toString());
 						toAdd1 = true;					
 					}
 					
@@ -460,7 +460,7 @@ public class Composed_ofServiceImpl extends dao.services.Composed_ofService {
 					composed_of_res.getProductRef().setDiscontinued(product_discontinued);
 					
 					String orderRef_OrderRef = r.getAs("Order_Details_OrderRef") == null ? null : r.getAs("Order_Details_OrderRef").toString();
-					composed_of_res.setReldata_Order_Details_orderRef_OrderRef(orderRef_OrderRef);
+					composed_of_res.setReldata_Order_Details_orderRef_source_OrderRef(orderRef_OrderRef);
 					
 		
 					return composed_of_res;
@@ -509,7 +509,7 @@ public class Composed_ofServiceImpl extends dao.services.Composed_ofService {
 			.withColumnRenamed("logEvents", "B_logEvents");
 		
 		Dataset<Row> res_row_productRef_orderRef = res_composed_of_productRef_orderRef.join(B_res_orderRef_productRef,
-			res_composed_of_productRef_orderRef.col("reldata_Order_Details_orderRef_OrderRef").equalTo(B_res_orderRef_productRef.col("reldata_Order_Details_orderRef_OrderID")));
+			res_composed_of_productRef_orderRef.col("reldata_Order_Details_orderRef_source_OrderRef").equalTo(B_res_orderRef_productRef.col("reldata_Order_Details_orderRef_target_OrderID")));
 		Dataset<Composed_of> res_Order_orderRef = res_row_productRef_orderRef.map((MapFunction<Row, Composed_of>) r -> {
 					Composed_of res = new Composed_of();
 					

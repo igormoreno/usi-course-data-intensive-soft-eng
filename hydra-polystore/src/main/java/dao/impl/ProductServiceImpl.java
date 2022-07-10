@@ -31,7 +31,7 @@ import util.WrappedArray;
 import org.apache.spark.api.java.function.FlatMapFunction;
 import org.apache.spark.api.java.function.FilterFunction;
 import java.util.ArrayList;
-import org.apache.commons.lang.mutable.MutableBoolean;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import tdo.*;
 import pojo.*;
 import util.*;
@@ -51,106 +51,6 @@ public class ProductServiceImpl extends ProductService {
 	
 	
 	
-	
-	
-	
-	
-	//TODO redis
-	public Dataset<Product> getProductListInProductStockInfoFromMyRedis(conditions.Condition<conditions.ProductAttribute> condition, MutableBoolean refilterFlag){
-		// Build the key pattern
-		//  - If the condition attribute is in the key pattern, replace by the value. Only if operator is EQUALS.
-		//  - Replace all other fields of key pattern by a '*' 
-		String keypattern= "", keypatternAllVariables="";
-		String valueCond=null;
-		String finalKeypattern;
-		List<String> fieldsListInKey = new ArrayList<>();
-		Set<ProductAttribute> keyAttributes = new HashSet<>();
-		keypattern=keypattern.concat("PRODUCT:");
-		keypatternAllVariables=keypatternAllVariables.concat("PRODUCT:");
-		if(!Util.containsOrCondition(condition)){
-			valueCond=Util.getStringValue(Util.getValueOfAttributeInEqualCondition(condition,ProductAttribute.productID));
-			keyAttributes.add(ProductAttribute.productID);
-		}
-		else{
-			valueCond=null;
-			refilterFlag.setValue(true);
-		}
-		if(valueCond==null)
-			keypattern=keypattern.concat("*");
-		else
-			keypattern=keypattern.concat(valueCond);
-		fieldsListInKey.add("ProductID");
-		keypatternAllVariables=keypatternAllVariables.concat("*");
-		keypattern=keypattern.concat(":STOCKINFO");
-		keypatternAllVariables=keypatternAllVariables.concat(":STOCKINFO");
-		if(!refilterFlag.booleanValue()){
-			Set<ProductAttribute> conditionAttributes = Util.getConditionAttributes(condition);
-			for (ProductAttribute a : conditionAttributes) {
-				if (!keyAttributes.contains(a)) {
-					refilterFlag.setValue(true);
-					break;
-				}
-			}
-		}
-	
-			
-		// Find the type of query to perform in order to retrieve a Dataset<Row>
-		// Based on the type of the value. Is a it a simple string or a hash or a list... 
-		Dataset<Row> rows;
-		StructType structType = new StructType(new StructField[] {
-			DataTypes.createStructField("_id", DataTypes.StringType, true), //technical field to store the key.
-			DataTypes.createStructField("UnitsInStock", DataTypes.StringType, true)
-	,		DataTypes.createStructField("UnitsOnOrder", DataTypes.StringType, true)
-		});
-		rows = SparkConnectionMgr.getRowsFromKeyValueHashes("myRedis",keypattern, structType);
-		if(rows == null || rows.isEmpty())
-				return null;
-		boolean isStriped = false;
-		String prefix=isStriped?keypattern.substring(0, keypattern.length() - 1):"";
-		finalKeypattern = keypatternAllVariables;
-		Dataset<Product> res = rows.map((MapFunction<Row, Product>) r -> {
-					Product product_res = new Product();
-					Integer groupindex = null;
-					String regex = null;
-					String value = null;
-					Pattern p, pattern = null;
-					Matcher m, match = null;
-					boolean matches = false;
-					String key = isStriped ? prefix + r.getAs("_id") : r.getAs("_id");
-					// Spark Redis automatically strips leading character if the pattern provided contains a single '*' at the end.				
-					pattern = Pattern.compile("\\*");
-			        match = pattern.matcher(finalKeypattern);
-					regex = finalKeypattern.replaceAll("\\*","(.*)");
-					p = Pattern.compile(regex);
-					m = p.matcher(key);
-					matches = m.find();
-					// attribute [Product.ProductID]
-					// Attribute mapped in a key.
-					groupindex = fieldsListInKey.indexOf("ProductID")+1;
-					if(groupindex==null) {
-						logger.warn("Attribute 'Product' mapped physical field 'ProductID' found in key but can't get index in build keypattern '{}'.", finalKeypattern);
-					}
-					String productID = null;
-					if(matches) {
-						productID = m.group(groupindex.intValue());
-					} else {
-						logger.warn("Cannot retrieve value for ProductproductID attribute stored in db myRedis. Regex [{}] Value [{}]",regex,value);
-						product_res.addLogEvent("Cannot retrieve value for Product.productID attribute stored in db myRedis. Probably due to an ambiguous regex.");
-					}
-					product_res.setProductID(productID == null ? null : Integer.parseInt(productID));
-					// attribute [Product.UnitsInStock]
-					Integer unitsInStock = r.getAs("UnitsInStock") == null ? null : Integer.parseInt(r.getAs("UnitsInStock"));
-					product_res.setUnitsInStock(unitsInStock);
-					// attribute [Product.UnitsOnOrder]
-					Integer unitsOnOrder = r.getAs("UnitsOnOrder") == null ? null : Integer.parseInt(r.getAs("UnitsOnOrder"));
-					product_res.setUnitsOnOrder(unitsOnOrder);
-	
-						return product_res;
-				}, Encoders.bean(Product.class));
-		res=res.dropDuplicates(new String[] {"productID"});
-		return res;
-		
-	}
 	
 	public static Pair<String, List<String>> getSQLWhereClauseInProductsInfoFromReldata(Condition<ProductAttribute> condition, MutableBoolean refilterFlag) {
 		return getSQLWhereClauseInProductsInfoFromReldataWithTableAlias(condition, refilterFlag, "");
@@ -455,6 +355,106 @@ public class ProductServiceImpl extends ProductService {
 	
 	
 	
+	//TODO redis
+	public Dataset<Product> getProductListInProductStockInfoFromMyRedis(conditions.Condition<conditions.ProductAttribute> condition, MutableBoolean refilterFlag){
+		// Build the key pattern
+		//  - If the condition attribute is in the key pattern, replace by the value. Only if operator is EQUALS.
+		//  - Replace all other fields of key pattern by a '*' 
+		String keypattern= "", keypatternAllVariables="";
+		String valueCond=null;
+		String finalKeypattern;
+		List<String> fieldsListInKey = new ArrayList<>();
+		Set<ProductAttribute> keyAttributes = new HashSet<>();
+		keypattern=keypattern.concat("PRODUCT:");
+		keypatternAllVariables=keypatternAllVariables.concat("PRODUCT:");
+		if(!Util.containsOrCondition(condition)){
+			valueCond=Util.getStringValue(Util.getValueOfAttributeInEqualCondition(condition,ProductAttribute.productID));
+			keyAttributes.add(ProductAttribute.productID);
+		}
+		else{
+			valueCond=null;
+			refilterFlag.setValue(true);
+		}
+		if(valueCond==null)
+			keypattern=keypattern.concat("*");
+		else
+			keypattern=keypattern.concat(valueCond);
+		fieldsListInKey.add("ProductID");
+		keypatternAllVariables=keypatternAllVariables.concat("*");
+		keypattern=keypattern.concat(":STOCKINFO");
+		keypatternAllVariables=keypatternAllVariables.concat(":STOCKINFO");
+		if(!refilterFlag.booleanValue()){
+			Set<ProductAttribute> conditionAttributes = Util.getConditionAttributes(condition);
+			for (ProductAttribute a : conditionAttributes) {
+				if (!keyAttributes.contains(a)) {
+					refilterFlag.setValue(true);
+					break;
+				}
+			}
+		}
+	
+			
+		// Find the type of query to perform in order to retrieve a Dataset<Row>
+		// Based on the type of the value. Is a it a simple string or a hash or a list... 
+		Dataset<Row> rows;
+		StructType structType = new StructType(new StructField[] {
+			DataTypes.createStructField("_id", DataTypes.StringType, true), //technical field to store the key.
+			DataTypes.createStructField("UnitsInStock", DataTypes.StringType, true)
+	,		DataTypes.createStructField("UnitsOnOrder", DataTypes.StringType, true)
+		});
+		rows = SparkConnectionMgr.getRowsFromKeyValueHashes("myRedis",keypattern, structType);
+		if(rows == null || rows.isEmpty())
+				return null;
+		boolean isStriped = false;
+		String prefix=isStriped?keypattern.substring(0, keypattern.length() - 1):"";
+		finalKeypattern = keypatternAllVariables;
+		Dataset<Product> res = rows.map((MapFunction<Row, Product>) r -> {
+					Product product_res = new Product();
+					Integer groupindex = null;
+					String regex = null;
+					String value = null;
+					Pattern p, pattern = null;
+					Matcher m, match = null;
+					boolean matches = false;
+					String key = isStriped ? prefix + r.getAs("_id") : r.getAs("_id");
+					// Spark Redis automatically strips leading character if the pattern provided contains a single '*' at the end.				
+					pattern = Pattern.compile("\\*");
+			        match = pattern.matcher(finalKeypattern);
+					regex = finalKeypattern.replaceAll("\\*","(.*)");
+					p = Pattern.compile(regex);
+					m = p.matcher(key);
+					matches = m.find();
+					// attribute [Product.ProductID]
+					// Attribute mapped in a key.
+					groupindex = fieldsListInKey.indexOf("ProductID")+1;
+					if(groupindex==null) {
+						logger.warn("Attribute 'Product' mapped physical field 'ProductID' found in key but can't get index in build keypattern '{}'.", finalKeypattern);
+					}
+					String productID = null;
+					if(matches) {
+						productID = m.group(groupindex.intValue());
+					} else {
+						logger.warn("Cannot retrieve value for ProductproductID attribute stored in db myRedis. Regex [{}] Value [{}]",regex,value);
+						product_res.addLogEvent("Cannot retrieve value for Product.productID attribute stored in db myRedis. Probably due to an ambiguous regex.");
+					}
+					product_res.setProductID(productID == null ? null : Integer.parseInt(productID));
+					// attribute [Product.UnitsInStock]
+					Integer unitsInStock = r.getAs("UnitsInStock") == null ? null : Integer.parseInt(r.getAs("UnitsInStock"));
+					product_res.setUnitsInStock(unitsInStock);
+					// attribute [Product.UnitsOnOrder]
+					Integer unitsOnOrder = r.getAs("UnitsOnOrder") == null ? null : Integer.parseInt(r.getAs("UnitsOnOrder"));
+					product_res.setUnitsOnOrder(unitsOnOrder);
+	
+						return product_res;
+				}, Encoders.bean(Product.class));
+		res=res.dropDuplicates(new String[] {"productID"});
+		return res;
+		
+	}
+	
+	
+	
+	
 	
 	
 	public Dataset<Product> getProductRefListInComposed_of(conditions.Condition<conditions.OrderAttribute> orderRef_condition,conditions.Condition<conditions.ProductAttribute> productRef_condition, conditions.Condition<conditions.Composed_ofAttribute> composed_of_condition)		{
@@ -481,7 +481,7 @@ public class ProductServiceImpl extends ProductService {
 		}
 		
 		Dataset<Row> res_row_productRef_orderRef = res_composed_of_productRef_orderRef.join(res_orderRef_productRef.withColumnRenamed("logEvents", "composed_of_logEvents"),
-																														res_composed_of_productRef_orderRef.col("reldata_Order_Details_orderRef_OrderRef").equalTo(res_orderRef_productRef.col("reldata_Order_Details_orderRef_OrderID")));																												
+																														res_composed_of_productRef_orderRef.col("reldata_Order_Details_orderRef_source_OrderRef").equalTo(res_orderRef_productRef.col("reldata_Order_Details_orderRef_target_OrderID")));																												
 																														
 		Dataset<Product> res_Product_productRef = res_row_productRef_orderRef.select("productRef.*").as(Encoders.bean(Product.class));
 		datasetsPOJO.add(res_Product_productRef.dropDuplicates(new String[] {"productID"}));	
@@ -546,7 +546,7 @@ public class ProductServiceImpl extends ProductService {
 				.withColumnRenamed("postalCode", "Supplier_postalCode")
 				.withColumnRenamed("region", "Supplier_region")
 				.withColumnRenamed("logEvents", "Supplier_logEvents"),
-				productTDOsupplierRefsuppliedProduct.col("reldata_ProductsInfo_supplierRef_SupplierRef").equalTo(supplierTDOsupplierRefsupplierRef.col("reldata_ProductsInfo_supplierRef_SupplierID")));
+				productTDOsupplierRefsuppliedProduct.col("reldata_ProductsInfo_supplierRef_source_SupplierRef").equalTo(supplierTDOsupplierRefsupplierRef.col("reldata_ProductsInfo_supplierRef_target_SupplierID")));
 		Dataset<Product> res_Product_supplierRef = res_supplierRef.select( "productID", "unitsInStock", "unitsOnOrder", "productName", "quantityPerUnit", "unitPrice", "reorderLevel", "discontinued", "logEvents").as(Encoders.bean(Product.class));
 		
 		res_Product_supplierRef = res_Product_supplierRef.dropDuplicates(new String[] {"productID"});

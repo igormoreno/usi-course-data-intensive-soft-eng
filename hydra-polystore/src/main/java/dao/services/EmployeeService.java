@@ -12,10 +12,10 @@ import java.util.ArrayList;
 import org.apache.spark.api.java.function.MapFunction;
 import org.apache.spark.sql.Encoders;
 import org.apache.spark.api.java.function.FilterFunction;
-import org.apache.commons.lang.mutable.MutableBoolean;
+import org.apache.commons.lang3.mutable.MutableBoolean;
 import conditions.Condition;
 import conditions.Operator;
-import util.Util;
+import util.*;
 import conditions.EmployeeAttribute;
 import pojo.Handles;
 import conditions.OrderAttribute;
@@ -81,6 +81,7 @@ public abstract class EmployeeService {
 	}
 	
 	public Dataset<Employee> getEmployeeList(conditions.Condition<conditions.EmployeeAttribute> condition){
+		StopWatch stopwatch = new StopWatch();
 		MutableBoolean refilterFlag = new MutableBoolean(false);
 		List<Dataset<Employee>> datasets = new ArrayList<Dataset<Employee>>();
 		Dataset<Employee> d = null;
@@ -98,6 +99,7 @@ public abstract class EmployeeService {
 		if(refilterFlag.booleanValue())
 			d = d.filter((FilterFunction<Employee>) r -> condition == null || condition.evaluate(r));
 		d = d.dropDuplicates(new String[] {"employeeID"});
+		logger.info("Execution time in seconds : ", stopwatch.getElapsedTimeInSeconds());
 		return d;
 	}
 	

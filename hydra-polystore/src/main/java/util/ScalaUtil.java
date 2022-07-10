@@ -8,8 +8,8 @@ import scala.collection.JavaConverters;
 public class ScalaUtil {
 	
 	public static List<String> javaList(Object o) {
-		if(o instanceof scala.collection.mutable.WrappedArray) {
-			return new ArrayList<String>(JavaConverters.asJavaCollection(((scala.collection.mutable.WrappedArray) o).toList()));
+		if(o instanceof scala.collection.mutable.ArraySeq) {
+			return new ArrayList<String>(JavaConverters.asJavaCollection(((scala.collection.mutable.ArraySeq) o).toList()));
 		}
 		if(o instanceof WrappedArray) {
 			return ((WrappedArray) o).list();
