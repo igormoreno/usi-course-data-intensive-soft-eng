@@ -2,13 +2,24 @@ package polystore;
 
 
 import java.util.List;
+import java.util.stream.Collectors;
+
 import conditions.Condition;
+import conditions.EmployeeAttribute;
 import conditions.Operator;
 import conditions.OrderAttribute;
+import dao.impl.BuysServiceImpl;
+import dao.impl.CustomerServiceImpl;
+import dao.impl.OrderServiceImpl;
 import dao.impl.ProductServiceImpl;
+import dao.services.BuysService;
+import dao.services.CustomerService;
+import dao.services.OrderService;
 import dao.services.ProductService;
 import pojo.Customer;
+import pojo.Order;
 import pojo.Product;
+import util.Dataset;
 
 public class Polystore {
 
@@ -30,14 +41,13 @@ public class Polystore {
      *         Employee with given firstname.
      */
     public List<Customer> getCustomersByOrderEncoder(String employeeFirstName) {
-//    	OrderService orderService = new OrderServiceImpl();
-//    	List<Integer> orders = orderService.getOrderListInHandlesByEmployeeRefCondition(Condition.simple(EmployeeAttribute.firstName, Operator.EQUALS, employeeFirstName))
-//    			                         .stream().map(order -> order.getOrderID()).collect(Collectors.toList());
-//
-//    	CustomerService customerService = new CustomerServiceImpl();
-//		Dataset<Customer> customers = customerService.getCustomerRefListInBuysByBoughtOrderCondition(Condition.createOrCondition(OrderAttribute.orderID, Operator.EQUALS, orders.toArray()));
-//        return customers;
-    	return null;
+    	OrderService orderService = new OrderServiceImpl();
+    	Dataset<Order> orders = orderService.getOrderListInHandlesByEmployeeRefCondition(Condition.simple(EmployeeAttribute.firstName, Operator.EQUALS, employeeFirstName));
+
+    	CustomerService customerService = new CustomerServiceImpl();
+		List<Customer> customers =
+				orders.stream().map(order -> customerService.getCustomerRefInBuysByBoughtOrder(order)).distinct().collect(Collectors.toList());
+        return customers;
     }
 
     /**

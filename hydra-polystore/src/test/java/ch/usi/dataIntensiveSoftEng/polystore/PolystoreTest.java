@@ -48,11 +48,12 @@ public class PolystoreTest {
     @Test
     public void testGetCustomersByOrderEncoder() {
         List<Customer> customers = polystore.getCustomersByOrderEncoder("Margaret");
-//        assertNotNull(customers);
-//        System.out.println("\nList of Customers which have made an Order encoded by Employee with firstname \"Margaret\" (" + customers.size() + ")");
-//        System.out.println("----------------");
-//        System.out.println(EntityUtils.prettyPrintCustomer(customers));
-//        System.out.println("----------------");
+        assertNotNull(customers);
+        assertEquals(75, customers.size());
+        System.out.println("\nList of Customers which have made an Order encoded by Employee with firstname \"Margaret\" (" + customers.size() + ")");
+        System.out.println("----------------");
+        System.out.println(EntityUtils.prettyPrintCustomer(customers));
+        System.out.println("----------------");
     }
 
     /**
