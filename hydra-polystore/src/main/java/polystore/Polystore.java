@@ -1,6 +1,8 @@
 package polystore;
 
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -8,11 +10,9 @@ import conditions.Condition;
 import conditions.EmployeeAttribute;
 import conditions.Operator;
 import conditions.OrderAttribute;
-import dao.impl.BuysServiceImpl;
 import dao.impl.CustomerServiceImpl;
 import dao.impl.OrderServiceImpl;
 import dao.impl.ProductServiceImpl;
-import dao.services.BuysService;
 import dao.services.CustomerService;
 import dao.services.OrderService;
 import dao.services.ProductService;
@@ -45,9 +45,12 @@ public class Polystore {
     	Dataset<Order> orders = orderService.getOrderListInHandlesByEmployeeRefCondition(Condition.simple(EmployeeAttribute.firstName, Operator.EQUALS, employeeFirstName));
 
     	CustomerService customerService = new CustomerServiceImpl();
-		List<Customer> customers =
-				orders.stream().map(order -> customerService.getCustomerRefInBuysByBoughtOrder(order)).distinct().collect(Collectors.toList());
-        return customers;
+		Collection<Customer> customers = orders.stream()
+				                               .map(order -> customerService.getCustomerRefInBuysByBoughtOrder(order))
+				                               .collect(Collectors.toMap(Customer::getID, (Customer c) -> c, (p, q) -> p))
+				                               .values();
+
+        return new ArrayList<>(customers);
     }
 
     /**
