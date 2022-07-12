@@ -19,9 +19,8 @@ public class PolystoreTest {
     @Before
     public void setUp() throws Exception {
         polystore = new Polystore(
-                SqlStore.init("jdbc:mysql://hydra.unamurcs.be:33063/reldata", "root", "password"),
-                new RedisStore("hydra.unamurcs.be", 63793),
-                MongoDBStore.init("mongodb://hydra.unamurcs.be:27013"));
+                new RedisStore("hydra.unamurcs.be", 63794),
+                MongoDBStore.init("mongodb://hydra.unamurcs.be:27014"));
     }
 
     @After

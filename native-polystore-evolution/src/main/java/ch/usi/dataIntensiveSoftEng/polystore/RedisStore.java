@@ -29,8 +29,8 @@ public class RedisStore {
         }
     }
 
-    public Map<String, String> getStockInfo(int productId) {
+    public Map<String, String> getProduct(int productId) {
         Jedis jedis = pool.getResource();
-        return jedis.hgetAll("PRODUCT:" + productId + ":STOCKINFO");
+        return jedis.hgetAll("PRODUCT:" + productId);
     }
 }

@@ -7,12 +7,10 @@ import java.sql.SQLException;
 import java.util.List;
 
 public class Polystore {
-    private SqlStore sqlStore;
     private RedisStore redisStore;
     private MongoDBStore mongoDBStore;
 
-    public Polystore(SqlStore sqlStore, RedisStore redisStore, MongoDBStore mongoDBStore) {
-        this.sqlStore = sqlStore;
+    public Polystore(RedisStore redisStore, MongoDBStore mongoDBStore) {
         this.redisStore = redisStore;
         this.mongoDBStore = mongoDBStore;
     }
@@ -21,9 +19,9 @@ public class Polystore {
      * @return A List of Products containing all information about the products.
      */
     public List<Product> getProducts() throws SQLException {
-        List<Product> products = sqlStore.getProducts();
-        redisStore.fillProducts(products);
-        return products;
+//        list<product> products = sqlstore.getproducts();
+//        redisstore.firstnamellproducts(products);
+        return null;
     }
 
     /**
@@ -45,8 +43,8 @@ public class Polystore {
      * @return All detailed Products of Order with given ID.
      */
     public List<Product> getProductsByOrderId(int orderId) throws SQLException {
-        List<Product> products = sqlStore.getProductsByOrderId(orderId);
-        redisStore.fillProducts(products);
-        return products;
+//        List<Product> products = sqlStore.getProductsByOrderId(orderId);
+//        redisStore.fillProducts(products);
+        return null;
     }
 }
