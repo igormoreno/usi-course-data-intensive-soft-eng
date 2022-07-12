@@ -9,7 +9,9 @@ import com.mongodb.client.model.Filters;
 import org.bson.Document;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class MongoDBStore {
 
@@ -25,10 +27,8 @@ public class MongoDBStore {
         return new MongoDBStore(MongoClients.create(uri));
     }
 
-    public List<Customer> getCustomers() {
-        MongoCollection<Document> gradesCollection = mongoDB.getCollection("Customers");
-        List<Document> res = gradesCollection.find().into(new ArrayList<>());
-        return null;
+    public void close() {
+        mongoClient.close();
     }
 
     public List<Customer> getCustomersByOrderEncoder(String employeeFirstName) {
@@ -58,6 +58,14 @@ public class MongoDBStore {
                 .into(new ArrayList<>());
 
         return customers;
+    }
+
+    public List<Integer> getProductIdsByOrder(int orderId) {
+        List<Document> products = (List<Document>) mongoDB.getCollection("Orders")
+                .find(Filters.in("OrderID", orderId))
+                .first()
+                .get("products");
+        return products.stream().map(product -> product.getInteger("ProductID")).collect(Collectors.toList());
     }
 
     public List<Document> listDatabases() {

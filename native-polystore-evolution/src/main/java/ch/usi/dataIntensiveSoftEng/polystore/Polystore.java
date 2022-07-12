@@ -5,6 +5,7 @@ import ch.usi.dataIntensiveSoftEng.polystore.entities.Product;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class Polystore {
     private RedisStore redisStore;
@@ -15,13 +16,16 @@ public class Polystore {
         this.mongoDBStore = mongoDBStore;
     }
 
+    public void close() {
+        mongoDBStore.close();
+        redisStore.close();
+    }
+
     /**
      * @return A List of Products containing all information about the products.
      */
     public List<Product> getProducts() throws SQLException {
-//        list<product> products = sqlstore.getproducts();
-//        redisstore.firstnamellproducts(products);
-        return null;
+        return redisStore.getProducts();
     }
 
     /**
@@ -43,8 +47,9 @@ public class Polystore {
      * @return All detailed Products of Order with given ID.
      */
     public List<Product> getProductsByOrderId(int orderId) throws SQLException {
-//        List<Product> products = sqlStore.getProductsByOrderId(orderId);
-//        redisStore.fillProducts(products);
-        return null;
+        return mongoDBStore.getProductIdsByOrder(orderId)
+                           .stream()
+                           .map(id -> redisStore.getProduct(id))
+                           .collect(Collectors.toList());
     }
 }

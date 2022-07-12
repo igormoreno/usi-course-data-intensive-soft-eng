@@ -3,77 +3,56 @@ package ch.usi.dataIntensiveSoftEng.polystore.entities;
 import java.util.Objects;
 
 public class Product {
-    private int productID;
-    private String productName;
-    private String quantityPerUnit;
-    private float unitPrice;
-    private int reorderLevel;
-    private int discontinued;
-    private int unitsInStock;
-    private int unitsOnOrder;
+    private final int productID;
+    private final String productName;
+    private final String quantityPerUnit;
+    private final float unitPrice;
+    private final int reorderLevel;
+    private final boolean discontinued;
+    private final int unitsInStock;
+    private final int unitsOnOrder;
+
+    public Product(int productID, String productName, String quantityPerUnit, float unitPrice, int reorderLevel, boolean discontinued, int unitsInStock, int unitsOnOrder) {
+        this.productID = productID;
+        this.productName = productName;
+        this.quantityPerUnit = quantityPerUnit;
+        this.unitPrice = unitPrice;
+        this.reorderLevel = reorderLevel;
+        this.discontinued = discontinued;
+        this.unitsInStock = unitsInStock;
+        this.unitsOnOrder = unitsOnOrder;
+    }
 
     public int getProductID() {
         return productID;
-    }
-
-    public void setProductID(int productID) {
-        this.productID = productID;
     }
 
     public String getProductName() {
         return productName;
     }
 
-    public void setProductName(String productName) {
-        this.productName = productName;
-    }
-
     public String getQuantityPerUnit() {
         return quantityPerUnit;
-    }
-
-    public void setQuantityPerUnit(String quantityPerUnit) {
-        this.quantityPerUnit = quantityPerUnit;
     }
 
     public float getUnitPrice() {
         return unitPrice;
     }
 
-    public void setUnitPrice(float unitPrice) {
-        this.unitPrice = unitPrice;
-    }
-
     public int getReorderLevel() {
         return reorderLevel;
     }
 
-    public void setReorderLevel(int reorderLevel) {
-        this.reorderLevel = reorderLevel;
-    }
-
-    public int getDiscontinued() {
+    public boolean getDiscontinued() {
         return discontinued;
-    }
-
-    public void setDiscontinued(int discontinued) {
-        this.discontinued = discontinued;
     }
 
     public int getUnitsInStock() {
         return unitsInStock;
     }
 
-    public void setUnitsInStock(int unitsInStock) {
-        this.unitsInStock = unitsInStock;
-    }
-
     public int getUnitsOnOrder() {
         return unitsOnOrder;
-    }
-
-    public void setUnitsOnOrder(int unitsOnOrder) {
-        this.unitsOnOrder = unitsOnOrder;
     }
 
     @Override

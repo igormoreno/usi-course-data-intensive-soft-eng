@@ -5,6 +5,7 @@ import ch.usi.dataIntensiveSoftEng.polystore.entities.EntityUtils;
 import ch.usi.dataIntensiveSoftEng.polystore.entities.Product;
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import java.sql.SQLException;
@@ -18,13 +19,14 @@ public class PolystoreTest {
 
     @Before
     public void setUp() throws Exception {
-        polystore = new Polystore(
-                new RedisStore("hydra.unamurcs.be", 63794),
-                MongoDBStore.init("mongodb://hydra.unamurcs.be:27014"));
+        RedisStore redisStore = new RedisStore("hydra.unamurcs.be", 63794);
+        MongoDBStore mongoDBStore = MongoDBStore.init("mongodb://hydra.unamurcs.be:27014");
+        polystore = new Polystore(redisStore, mongoDBStore);
     }
 
     @After
     public void tearDown() throws Exception {
+        polystore.close();
     }
 
     /**
@@ -50,6 +52,7 @@ public class PolystoreTest {
     public void getCustomersByOrderEncoder() {
         List<Customer> customers = polystore.getCustomersByOrderEncoder("Margaret");
         assertNotNull(customers);
+        assertEquals(75, customers.size());
         System.out.println("\nList of Customers which have made an Order encoded by Employee with firstname \"Margaret\" (" + customers.size() + ")");
         System.out.println("----------------");
         System.out.println(EntityUtils.prettyPrintCustomer(customers));
