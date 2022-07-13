@@ -1,29 +1,26 @@
 databases {
-	mysql reldata {
-		dbname : "reldata"
-		host : "hydra.unamurcs.be"
-		login : "root"
-		password : "password"
-		port : 33063
-	}
-	
 	mongodb myMongoDB {
 		host : "hydra.unamurcs.be"
-		port : 27013
+		port : 27014
 	}
 	
 	redis myRedis {
 		host : "hydra.unamurcs.be"
-		port : 63793		
+		port : 63794
 	}
 }
 
 physical schemas {
 	
 	key value schema myRedis : myRedis {
-		kvpairs productStockInfo {
-			key : "PRODUCT:"[ProductID]":STOCKINFO",
+		kvpairs product {
+			key : "PRODUCT:"[ProductID],
 			value : hash {
+				ProductName,
+				QuantityPerUnit,
+				UnitPrice,
+				ReorderLevel,
+				Discontinued,
 				UnitsInStock,
 				UnitsOnOrder
 			}
@@ -87,6 +84,12 @@ physical schemas {
 				customer[1] {
 					CustomerID,
 					ContactName
+				},
+				details[0-N] {
+					ProductID,
+					UnitPrice,
+					Quantity,
+					Discount
 				}
 			}
 			references {
@@ -107,38 +110,11 @@ physical schemas {
 				HomePage,
 				Phone,
 				PostalCode,
-				Region
-			}
-		}
-	}
-	
-	relational schema reldata : reldata {
-		table Order_Details {
-			columns {
-				OrderRef,
-				ProductRef,
-				UnitPrice,
-				Quantity,
-				Discount
+				Region,
+				products[] : ProductRef
 			}
 			references {
-				productRef : ProductRef -> reldata.ProductsInfo.ProductID
-				orderRef : OrderRef -> myMongoDB.Orders.OrderID
-			}
-		}
-		
-		table ProductsInfo {
-			columns {
-				ProductID,
-				ProductName,
-				SupplierRef,
-				QuantityPerUnit,
-				UnitPrice,
-				ReorderLevel,
-				Discontinued
-			}
-			references {
-				supplierRef : SupplierRef -> myMongoDB.Suppliers.SupplierID
+				prodSupplied: ProductRef -> myRedis.product.ProductID	
 			}
 		}
 	}
@@ -254,7 +230,7 @@ conceptual schema group2 {
 	}
 	
 	relationship type supplies {
-		suppliedProduct[1] : Product,
+		suppliedProduct[1-N] : Product,
 		supplierRef[0-N] : Supplier		
 	}
 }
@@ -269,8 +245,9 @@ mapping rules {
 		 	                    ContactTitle, Country, Fax,
 		 	                    HomePage, Phone, PostalCode,
 		 	                    Region),
-	// one-to-many - multiple databases
-	group2.supplies.suppliedProduct -> reldata.ProductsInfo.supplierRef,
+	// many-to-many - nested entities
+	group2.supplies.suppliedProduct
+		 -> myMongoDB.Suppliers.prodSupplied,
 
 	group2.Customer(iD, address, city, companyName,
 		            contactName, contactTitle, country,
@@ -306,16 +283,18 @@ mapping rules {
 	// one-to-many - single database
 	group2.handles.order -> myMongoDB.Orders.orderHandler,
 	
-	// single entity - multiple database
-	group2.Product(productID, unitsInStock, unitsOnOrder)
-	    -> myRedis.productStockInfo(ProductID, UnitsInStock, UnitsOnOrder),
+	// single entity - single database
 	group2.Product(productID, productName, quantityPerUnit,
-		           unitPrice, reorderLevel, discontinued) 
-		-> reldata.ProductsInfo(ProductID, ProductName, QuantityPerUnit,
-						 		UnitPrice, ReorderLevel, Discontinued),
-	// many-to-many with attributes
-	group2.composed_of.orderRef -> reldata.Order_Details.orderRef,
-	group2.composed_of.productRef -> reldata.Order_Details.productRef,
+		           unitPrice, reorderLevel, discontinued, unitsInStock, unitsOnOrder)
+	    -> myRedis.product(ProductID, ProductName, QuantityPerUnit,
+		           UnitPrice, ReorderLevel, Discontinued, UnitsInStock, UnitsOnOrder),
+	// many-to-many with attributes - nested entities 
+	// answer taken from: nested, many-to-many with entities
+	group2.Product(productID)
+		 -> myMongoDB.Orders.details(ProductID),
+	group2.composed_of.productRef
+		 -> myMongoDB.Orders.details(),
 	rel : group2.composed_of(unitPrice, quantity, discount)
-	    -> reldata.Order_Details(UnitPrice, Quantity, Discount)
+	    -> myMongoDB.Orders.details(UnitPrice, Quantity, Discount)
+		 
 }
