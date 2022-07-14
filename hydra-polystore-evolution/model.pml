@@ -85,8 +85,9 @@ physical schemas {
 					CustomerID,
 					ContactName
 				},
-				details[0-N] {
+				products[0-N] {
 					ProductID,
+					ProductName,
 					UnitPrice,
 					Quantity,
 					Discount
@@ -230,7 +231,7 @@ conceptual schema group2 {
 	}
 	
 	relationship type supplies {
-		suppliedProduct[1-N] : Product,
+		suppliedProduct[1] : Product,
 		supplierRef[0-N] : Supplier		
 	}
 }
@@ -246,7 +247,7 @@ mapping rules {
 		 	                    HomePage, Phone, PostalCode,
 		 	                    Region),
 	// many-to-many - nested entities
-	group2.supplies.suppliedProduct
+	group2.supplies.supplierRef
 		 -> myMongoDB.Suppliers.prodSupplied,
 
 	group2.Customer(iD, address, city, companyName,
@@ -290,11 +291,11 @@ mapping rules {
 		           UnitPrice, ReorderLevel, Discontinued, UnitsInStock, UnitsOnOrder),
 	// many-to-many with attributes - nested entities 
 	// answer taken from: nested, many-to-many with entities
-	group2.Product(productID)
-		 -> myMongoDB.Orders.details(ProductID),
+	group2.Product(productID, productName)
+		 -> myMongoDB.Orders.products(ProductID, ProductName),
 	group2.composed_of.productRef
-		 -> myMongoDB.Orders.details(),
+		 -> myMongoDB.Orders.products(),
 	rel : group2.composed_of(unitPrice, quantity, discount)
-	    -> myMongoDB.Orders.details(UnitPrice, Quantity, Discount)
+	    -> myMongoDB.Orders.products(UnitPrice, Quantity, Discount)
 		 
 }
